@@ -1,0 +1,2 @@
+include docs/core.md
+recursive-include tests/core *.py

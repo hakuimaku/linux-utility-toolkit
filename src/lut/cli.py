@@ -6,6 +6,8 @@ import signal
 import sys
 
 from lut import __version__, commands
+from lut.core.errors import report_error
+from lut.core.logging import logging_context
 from lut.parser import CommandParser
 
 
@@ -30,7 +32,7 @@ def build_parser() -> CommandParser:
             "Required dependencies: Python 3.11+; help never checks utility backends.\n\n"
             "Exit codes: 0 success/help; 1 execution error or unimplemented command;\n"
             "2 invalid syntax; 3 missing backend; 4 invalid input; 5 output/access error;\n"
-            "130 interrupted; 141 stdout pipe closed. Codes 3-5 are reserved for future operations."
+            "130 interrupted; 141 stdout pipe closed."
         ),
     )
     parser.set_defaults(verbose=False, dry_run=False)
@@ -68,7 +70,8 @@ def _dispatch(argv: list[str] | None = None) -> int:
         # Read the selected parser without reconstructing the command path.
         selected = options.command_parser
         if options.handler is not None:
-            return options.handler(options)
+            with logging_context(verbose=options.verbose):
+                return options.handler(options)
         if selected is parser or selected.commands:
             selected.print_help()
             return 0
@@ -85,6 +88,10 @@ def _dispatch(argv: list[str] | None = None) -> int:
     except KeyboardInterrupt:
         print("lut: interrupted.", file=sys.stderr)
         return 130
+    except BrokenPipeError:
+        raise
+    except Exception as error:
+        return report_error(error)
 
 
 def main(argv: list[str] | None = None) -> int:

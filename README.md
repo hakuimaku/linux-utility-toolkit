@@ -1,7 +1,8 @@
 # Linux Utility Toolkit (LUT)
 
-LUT is a Linux command-line toolkit under development. **Milestone 1 — CLI & Help**
-provides nested command documentation, argument parsing and module registration.
+LUT is a Linux command-line toolkit under development. **Milestone 2 — Core Utilities**
+adds reusable output, dependency, process, config, error and logging support to
+the nested CLI and module registry.
 All utility operations are marked **help only; not implemented** and never run.
 The development version remains `0.0.0`; `0.1.0` is reserved for release.
 
@@ -74,9 +75,9 @@ alone does not distinguish that word from the help alias.
 | `0` | Help or version displayed successfully |
 | `1` | Syntactically valid operation is not implemented; future execution error |
 | `2` | Invalid command, option or missing required argument |
-| `3` | Reserved: missing backend |
-| `4` | Reserved: invalid input |
-| `5` | Reserved: output conflict or access error |
+| `3` | Missing backend or unsupported backend version |
+| `4` | Missing or malformed input |
+| `5` | Output conflict or filesystem access error |
 | `130` | Interrupted with Ctrl+C |
 | `141` | Stdout pipe closed by the reader (`128 + SIGPIPE`) |
 
@@ -105,8 +106,34 @@ and help; it must not check dependencies, read user files or perform operations.
 documentation, a scoped dry-run flag and an optional `handler(namespace) -> int`.
 Commands without handlers are labeled help only; valid leaf invocations return
 `1`. The handler contract supports future implementations without a dispatch
-switch in `cli.py`. M1 registers no utility handlers. There is no plugin discovery
+switch in `cli.py`. M2 registers no utility handlers. There is no plugin discovery
 or external plugin framework.
+
+## Core utilities
+
+The APIs under `lut.core` provide:
+
+- `output.atomic_output`: automatic names, numbered collisions, explicit output
+  overrides, private staging and atomic publication without replacing an existing
+  file or directory. Failed operations clean staging; dry runs only plan a path.
+- `dependencies.require_executable` and `require_service`: on-demand PATH/version
+  checks, distro-aware installation hints and caller-supplied service probes.
+  No dependency is installed and no service is started.
+- `process.run_process`: literal argument lists, completed exit status, bounded
+  stdout/stderr capture, streaming progress callbacks, deadlines and process-group
+  cleanup on timeout or cancellation. No arguments or backend output are logged.
+- `config`: XDG config/cache/state paths and optional TOML loading without
+  first-run writes. Relative XDG overrides are ignored.
+- `errors` and `logging`: stable error codes, safe CLI diagnostics and scoped
+  stderr logging. Private file logging requires an explicit destination.
+
+See [Core API contracts and examples](docs/core.md) for usage and limitations,
+including filesystem requirements and the scope of process-group cleanup.
+
+No new CLI commands or options are introduced by M2. Core dry runs are available
+to Python callers; the utility commands still reject execution, including their
+planned dry-run invocations. Real image, video, archive and search operations
+remain unimplemented.
 
 ## Development and validation
 
@@ -129,6 +156,11 @@ Entry point tests run outside the source tree with no executable backends on
 arguments and refusal of planned operations. They also check that invocations
 create no files in the working directory.
 
+Core tests cover real concurrent file/directory publication, collisions and
+symlinks, rollback, permissions, dry-run side effects, XDG overrides, dependency
+and service errors, process capture limits, Unicode progress, timeouts, real
+SIGINT, descendant termination, descriptor cleanup and credential-free logs.
+
 CI is defined in [`.github/workflows/lut.yml`](.github/workflows/lut.yml).
 It installs the package normally and runs LUT-only tests, lint and entry point
 smoke checks on Ubuntu with Python 3.11–3.14. This matrix is not a claim of
@@ -149,16 +181,22 @@ linux-utility-toolkit/
 │   ├── commands/
 │   │   ├── __init__.py
 │   │   └── <built-in command modules>.py
-│   └── core/__init__.py
+│   └── core/
+│       ├── __init__.py
+│       ├── output.py
+│       ├── dependencies.py
+│       ├── process.py
+│       ├── config.py
+│       ├── errors.py
+│       └── logging.py
 └── tests/
     ├── test_cli.py
-    └── test_help.py
+    ├── test_help.py
+    └── core/
 ```
 
-The `core` namespace contains no utilities yet. Output/dependency/config/process
-managers, logging infrastructure, real dry-run previews and every utility
-operation remain outside M1. No additional runtime or development dependencies
-are introduced by the help system.
+M2 adds no runtime or development dependencies. The package stays on the standard
+library at runtime. All utility implementations belong to later milestones.
 
 ## License
 
