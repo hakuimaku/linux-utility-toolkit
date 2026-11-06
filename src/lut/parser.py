@@ -32,20 +32,23 @@ class CommandParser(argparse.ArgumentParser):
         *,
         examples: Sequence[str],
         dependencies: str = "Python 3.11+; no external backend.",
+        default_output: str = "terminal text only; no files are created.",
         dry_run: bool = False,
+        status: str | None = None,
         handler: Callable[[argparse.Namespace], int] | None = None,
     ) -> "CommandParser":
         """Register a child, marking commands without handlers as help only."""
         if self._command_group is None:
             self._command_group = self.add_subparsers(title="subcommands", metavar="COMMAND")
         # Label planned commands without advertising them as operational.
-        status = " [help only; not implemented]" if handler is None else ""
+        if status is None:
+            status = " [help only; not implemented]" if handler is None else ""
         # Assemble the common documentation around argparse's generated usage.
         details = (
             "Arguments: listed above; command groups accept a subcommand.\n\n"
             "Examples:\n"
             + "\n".join(f"  {example}" for example in examples)
-            + "\n\nDefault output: terminal text only; no files are created.\n"
+            + f"\n\nDefault output: {default_output}\n"
             + f"Required dependencies: {dependencies}"
         )
         # Keep this parser in the same tree argparse uses for dispatch.
@@ -57,11 +60,16 @@ class CommandParser(argparse.ArgumentParser):
         )
         command.set_defaults(handler=handler)
         if dry_run:
+            dry_run_help = (
+                "Preview actions without making changes."
+                if handler is not None
+                else "Request a preview; this operation is not implemented yet."
+            )
             command.add_argument(
                 "--dry-run",
                 action="store_true",
                 default=argparse.SUPPRESS,
-                help="Request a preview; this operation is not implemented yet.",
+                help=dry_run_help,
             )
         self.commands[name] = command
         return command

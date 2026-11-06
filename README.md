@@ -1,9 +1,10 @@
 # Linux Utility Toolkit (LUT)
 
-LUT is a Linux command-line toolkit under development. **Milestone 2 — Core Utilities**
-adds reusable output, dependency, process, config, error and logging support to
-the nested CLI and module registry.
-All utility operations are marked **help only; not implemented** and never run.
+LUT is a Linux command-line toolkit under development. **Milestone 3 — Search & File Tools**
+implements operational search (`search content`, `search name`) and file management
+(`file hash`, `file info`, `file duplicates`, `file rename`) tools.
+Other utility groups (archive, image, video, audio, wifi, bluetooth, system) remain
+planned and marked **help only; not implemented**.
 The development version remains `0.0.0`; `0.1.0` is reserved for release.
 
 This is a standalone Python project. Installation does not change system
@@ -106,8 +107,30 @@ and help; it must not check dependencies, read user files or perform operations.
 documentation, a scoped dry-run flag and an optional `handler(namespace) -> int`.
 Commands without handlers are labeled help only; valid leaf invocations return
 `1`. The handler contract supports future implementations without a dispatch
-switch in `cli.py`. M2 registers no utility handlers. There is no plugin discovery
-or external plugin framework.
+switch in `cli.py`. Commands with handlers execute directly, while planned
+commands reject execution with exit code 1.
+
+## Search tools (M3)
+
+- `lut search content <keyword> [path] [options]` (alias: `lut search <keyword>`):
+  fast text search powered by `ripgrep` with streaming output, ignore-file support, and JSON.
+- `lut search name <pattern> [path] [options]`:
+  recursive glob search across files and directories (including empty dirs) using Python traversal.
+
+See [Search documentation](docs/search.md) for complete options and backend details.
+
+## File tools (M3)
+
+- `lut file hash <file> [-a algo]`:
+  chunked cryptographic checksums (SHA-256, SHA-512, SHA-1, MD5).
+- `lut file info <path>`:
+  metadata, size, timestamps, permissions and symlink inspection.
+- `lut file duplicates [path]`:
+  find duplicate files with hardlink-aware wasted space calculation.
+- `lut file rename <inputs> [--prefix] [--suffix] [--replace] [--apply]`:
+  preview-by-default safe batch renaming with preflight collision checks and atomic non-overwriting rename.
+
+See [File tools documentation](docs/file.md) for complete details.
 
 ## Core utilities
 

@@ -59,7 +59,20 @@ def test_every_help_level(path, invoke, monkeypatch):
     for section in ("usage:", "Arguments:", "options:", "Examples:", "Required dependencies:"):
         assert section in output
     assert "Default output:" in output
-    if path and path != ("help",):
+    implemented_paths = {
+        ("search",),
+        ("search", "content"),
+        ("search", "name"),
+        ("file",),
+        ("file", "hash"),
+        ("file", "info"),
+        ("file", "duplicates"),
+        ("file", "rename"),
+        ("help",),
+    }
+    if path in implemented_paths:
+        assert "help only; not implemented" not in output
+    else:
         assert "help only; not implemented" in output
 
 
@@ -97,9 +110,20 @@ def test_planned_examples_match_syntax(path, invoke):
 
 
 def test_planned_commands_have_no_handlers():
-    """Ensure every advertised utility remains unavailable in M1."""
+    """Ensure planned utility commands (M4-M9) remain unavailable without handlers."""
+    implemented_progs = {
+        "lut help",
+        "lut search content",
+        "lut search name",
+        "lut file hash",
+        "lut file info",
+        "lut file duplicates",
+        "lut file rename",
+    }
     for parser in cli.build_parser().walk():
-        if parser.prog != "lut help":
+        if parser.prog in implemented_progs:
+            assert parser.get_default("handler") is not None
+        else:
             assert parser.get_default("handler") is None
 
 
@@ -121,7 +145,7 @@ def test_help_with_switches(arguments, invoke):
     "arguments, context",
     [
         (["unknown"], "lut"),
-        (["search", "unknown"], "lut search"),
+        (["archive", "unknown"], "lut archive"),
         (["image", "unknown"], "lut image"),
         (["search", "content"], "lut search content"),
         (["image", "convert"], "lut image convert"),
@@ -165,7 +189,7 @@ def test_verbose_and_dry_run_scope(arguments, invoke):
 
 @pytest.mark.parametrize(
     "arguments",
-    [["search", "content", "--", "help"], ["search", "content", "word", "help"]],
+    [["archive", "compress", "--", "help"], ["archive", "compress", "word", "help"]],
 )
 def test_literal_help_operands(arguments, invoke):
     """Treat help after -- or another operand as input, not as a help alias."""
@@ -173,6 +197,14 @@ def test_literal_help_operands(arguments, invoke):
     code, output, errors = invoke(arguments)
     assert code == 1 and output == ""
     assert "not implemented" in errors
+
+
+def test_literal_help_operand_implemented_search(invoke):
+    """Literal 'help' operand is treated as search keyword, not a help switch."""
+    code, output, errors = invoke(["search", "content", "--", "help"])
+    # Should execute content search for keyword "help" instead of displaying help
+    assert "usage: lut search content" not in output
+    assert "Try 'lut search content --help'" not in errors
 
 
 def test_register_new_module_without_cli_changes(monkeypatch, invoke):

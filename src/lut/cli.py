@@ -16,20 +16,19 @@ def build_parser() -> CommandParser:
     # Share verbosity and preview defaults without child parsers resetting them.
     parser = CommandParser(
         prog="lut",
-        description=(
-            "Linux Utility Toolkit (LUT). Utility commands are help only; not implemented yet."
-        ),
+        description="Linux Utility Toolkit (LUT) - simplified Linux CLI operations.",
         epilog=(
             "Arguments: choose a listed command; no command shows this help.\n\n"
             "Examples:\n"
             "  lut help\n"
             "  lut help --all\n"
-            "  lut search help\n"
-            "  lut image convert --help\n"
+            '  lut search content "database"\n'
+            '  lut search name "*.py"\n'
+            "  lut file hash document.pdf\n"
             "  lut --version\n"
             "\n"
             "Default output: terminal text only; no files are created.\n"
-            "Required dependencies: Python 3.11+; help never checks utility backends.\n\n"
+            "Required dependencies: Python 3.11+; ripgrep for content search.\n\n"
             "Exit codes: 0 success/help; 1 execution error or unimplemented command;\n"
             "2 invalid syntax; 3 missing backend; 4 invalid input; 5 output/access error;\n"
             "130 interrupted; 141 stdout pipe closed."
@@ -58,6 +57,53 @@ def build_parser() -> CommandParser:
     return parser
 
 
+def _normalize_search_alias(arguments: list[str]) -> list[str]:
+    """Normalize 'lut search <keyword>' into 'lut search content <keyword>'."""
+    args = list(arguments)
+    try:
+        idx = args.index("search")
+    except ValueError:
+        return args
+
+    after = args[idx + 1 :]
+    if not after:
+        return args
+
+    first = after[0]
+    if first in ("--help", "-h", "help", "content", "name"):
+        return args
+
+    if first.startswith("--vers"):
+        return args
+
+    content_flags = (
+        "-i",
+        "--ignore-case",
+        "-e",
+        "--ext",
+        "-l",
+        "--files-only",
+        "-c",
+        "--count",
+        "--regex",
+        "--hidden",
+        "--no-ignore",
+        "--glob",
+        "--max-depth",
+        "--json",
+    )
+
+    if first == "--" or not first.startswith("-"):
+        args.insert(idx + 1, "content")
+        return args
+
+    if first in content_flags:
+        args.insert(idx + 1, "content")
+        return args
+
+    return args
+
+
 def _dispatch(argv: list[str] | None = None) -> int:
     """Dispatch help and handlers while refusing unimplemented operations."""
     try:
@@ -65,6 +111,7 @@ def _dispatch(argv: list[str] | None = None) -> int:
         parser = build_parser()
         # Preserve explicit argument lists for embedded callers and unit tests.
         arguments = list(sys.argv[1:] if argv is None else argv)
+        arguments = _normalize_search_alias(arguments)
         # Select the deepest parser and its module-provided handler.
         options = parser.parse_args(parser.help_alias(arguments))
         # Read the selected parser without reconstructing the command path.

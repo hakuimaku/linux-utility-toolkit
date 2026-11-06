@@ -57,7 +57,8 @@ def test_help(run_cli, arguments):
     assert "Examples:" in result.stdout
     assert "Default output:" in result.stdout
     assert "Required dependencies:" in result.stdout
-    assert "not implemented yet" in result.stdout
+    if arguments == ["help", "--all"]:
+        assert "not implemented" in result.stdout
 
 
 def test_version(run_cli):
@@ -83,9 +84,17 @@ def test_invalid_arguments(run_cli, arguments):
 
 
 @pytest.mark.parametrize(
-    "path", [("search",), ("search", "content"), ("image",), ("image", "convert")]
+    "path, is_implemented",
+    [
+        (("search",), True),
+        (("search", "content"), True),
+        (("file",), True),
+        (("file", "rename"), True),
+        (("image",), False),
+        (("image", "convert"), False),
+    ],
 )
-def test_nested_help_entry_points(run_cli, path):
+def test_nested_help_entry_points(run_cli, path, is_implemented):
     """Keep nested help aliases equivalent through both installed entry points."""
     # Invoke both public spellings without any available backend executables.
     alias = run_cli(*path, "help")
@@ -95,16 +104,19 @@ def test_nested_help_entry_points(run_cli, path):
     assert alias.stderr == option.stderr == ""
     assert alias.stdout == option.stdout
     assert f"usage: lut {' '.join(path)} " in alias.stdout
-    assert "help only; not implemented" in alias.stdout
+    if is_implemented:
+        assert "help only; not implemented" not in alias.stdout
+    else:
+        assert "help only; not implemented" in alias.stdout
 
 
 @pytest.mark.parametrize(
     "arguments",
     [
-        ["search", "content", "keyword"],
+        ["archive", "compress", "backup.zip", "--dry-run"],
         ["image", "convert", "ảnh ; $.png", "--dry-run"],
-        ["file", "rename", "original.txt", "--dry-run"],
         ["archive", "extract", "archive.zip", "--dry-run"],
+        ["video", "compress", "movie.mp4", "--dry-run"],
         ["video", "info", "movie.mp4"],
         ["audio", "normalize", "sound.flac", "--dry-run"],
         ["wifi", "connect", "network", "--dry-run"],
