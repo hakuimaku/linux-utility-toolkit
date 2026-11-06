@@ -73,6 +73,13 @@ def test_every_help_level(path, invoke, monkeypatch):
         ("archive", "extract"),
         ("archive", "list"),
         ("archive", "test"),
+        ("image",),
+        ("image", "convert"),
+        ("image", "compress"),
+        ("image", "resize"),
+        ("image", "crop"),
+        ("image", "rotate"),
+        ("image", "metadata"),
         ("help",),
     }
     if path in implemented_paths:
@@ -115,7 +122,7 @@ def test_planned_examples_match_syntax(path, invoke):
 
 
 def test_planned_commands_have_no_handlers():
-    """Ensure planned utility commands (M5-M9) remain unavailable without handlers."""
+    """Ensure planned utility commands (M6-M9) remain unavailable without handlers."""
     implemented_progs = {
         "lut help",
         "lut search content",
@@ -128,6 +135,12 @@ def test_planned_commands_have_no_handlers():
         "lut archive extract",
         "lut archive list",
         "lut archive test",
+        "lut image convert",
+        "lut image compress",
+        "lut image resize",
+        "lut image crop",
+        "lut image rotate",
+        "lut image metadata",
     }
     for parser in cli.build_parser().walk():
         if parser.prog in implemented_progs:
@@ -181,9 +194,9 @@ def test_syntax_errors(arguments, context, invoke):
 @pytest.mark.parametrize(
     "arguments",
     [
-        ["--verbose", "image", "convert", "private.png", "--dry-run"],
-        ["image", "--verbose", "convert", "private.png", "--dry-run"],
-        ["image", "convert", "private.png", "--verbose", "--dry-run"],
+        ["--verbose", "video", "compress", "private.mp4", "--dry-run"],
+        ["video", "--verbose", "compress", "private.mp4", "--dry-run"],
+        ["video", "compress", "private.mp4", "--verbose", "--dry-run"],
     ],
 )
 def test_verbose_and_dry_run_scope(arguments, invoke):
@@ -191,14 +204,14 @@ def test_verbose_and_dry_run_scope(arguments, invoke):
     # Ensure child defaults do not erase the verbosity set on a parent parser.
     code, output, errors = invoke(arguments)
     assert code == 1 and output == ""
-    assert "selected command: lut image convert; dry-run: True" in errors
-    assert "private.png" not in errors
+    assert "selected command: lut video compress; dry-run: True" in errors
+    assert "private.mp4" not in errors
     assert "not implemented" in errors
 
 
 @pytest.mark.parametrize(
     "arguments",
-    [["image", "convert", "--", "help"], ["image", "convert", "--dry-run", "--", "help"]],
+    [["video", "compress", "--", "help"], ["video", "compress", "--dry-run", "--", "help"]],
 )
 def test_literal_help_operands(arguments, invoke):
     """Treat help after -- or another operand as input, not as a help alias."""
@@ -222,6 +235,16 @@ def test_literal_help_operand_implemented_archive(tmp_path, invoke):
     code, out, err = invoke(["archive", "compress", str(tmp_path / "help"), "--dry-run"])
     assert code == 0
     assert "usage: lut archive compress" not in out
+
+
+def test_literal_help_operand_implemented_image(invoke):
+    """Literal 'help' operand is treated as filename for image metadata, not a help switch."""
+    code, out, err = invoke(["image", "metadata", "--", "help"])
+    # Should execute metadata for file named "help" (code 4 because file not found)
+    # instead of displaying help
+    assert "usage: lut image metadata" not in out
+    assert "Try 'lut image metadata --help'" not in err
+    assert code == 4
 
 
 def test_register_new_module_without_cli_changes(monkeypatch, invoke):

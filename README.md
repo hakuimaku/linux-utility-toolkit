@@ -1,10 +1,12 @@
 # Linux Utility Toolkit (LUT)
 
-LUT is a Linux command-line toolkit under development. **Milestone 4 — Archive Manager**
-implements operational archive tools (`archive compress`, `archive extract`, `archive list`, `archive test`),
-alongside Milestone 3 search (`search content`, `search name`) and file management
-(`file hash`, `file info`, `file duplicates`, `file rename`) tools.
-Other utility groups (image, video, audio, wifi, bluetooth, system) remain
+LUT is a Linux command-line toolkit under development. **Milestone 5 — Image Tools**
+implements operational image tools (`image convert`, `image compress`, `image resize`,
+`image crop`, `image rotate`, `image metadata`), alongside Milestone 4 archive tools
+(`archive compress`, `archive extract`, `archive list`, `archive test`), Milestone 3
+search (`search content`, `search name`), and file management (`file hash`, `file info`,
+`file duplicates`, `file rename`) tools.
+Other utility groups (video, audio, wifi, bluetooth, system) remain
 planned and marked **help only; not implemented**.
 The development version remains `0.0.0`; `0.1.0` is reserved for release.
 
@@ -146,6 +148,23 @@ See [File tools documentation](docs/file.md) for complete details.
 
 See [Archive documentation](docs/archive.md) for format matrix, security guarantees, and limitations.
 
+## Image tools (M5)
+
+- `lut image convert <input> [--format FORMAT] [-o OUTPUT] [--quality N] [--background COLOR] [--frame N]`:
+  safe image format conversion between JPEG, PNG, WebP, BMP, TIFF, and GIF with explicit transparency handling and animation loss protection.
+- `lut image compress <input> [-q QUALITY] [-o OUTPUT]`:
+  reduce image file size with lossy quality controls for JPEG/WebP, lossless compression for PNG, and accurate before/after size reporting.
+- `lut image resize <input> [--width N] [--height N] [--fit contain|cover|stretch] [--allow-upscale] [-o OUTPUT]`:
+  dimension resizing preserving aspect ratio by default, with bounding box contain/cover/stretch modes and upscale prevention.
+- `lut image crop <input> --x N --y N --width N --height N [-o OUTPUT]`:
+  pixel region cropping with strict boundary validation, virtual canvas reset (+repage), and transparency preservation.
+- `lut image rotate <input> --angle N [--background COLOR] [-o OUTPUT]`:
+  clockwise rotation in degrees, expanding canvas without corner cropping, auto-orienting EXIF and normalizing orientation metadata.
+- `lut image metadata <input> [--json]`:
+  read-only inspection of format, dimensions, colorspace, alpha channels, profiles, bit depth, and orientation without GPS data leakage.
+
+See [Image documentation](docs/image.md) for supported formats, options, safety rules, and limitations.
+
 ## Core utilities
 
 The APIs under `lut.core` provide:
@@ -214,7 +233,8 @@ linux-utility-toolkit/
 │   ├── core.md
 │   ├── file.md
 │   ├── search.md
-│   └── archive.md
+│   ├── archive.md
+│   └── image.md
 ├── src/lut/
 │   ├── __init__.py
 │   ├── __main__.py
@@ -226,7 +246,8 @@ linux-utility-toolkit/
 │   ├── services/
 │   │   ├── search_service.py
 │   │   ├── file_service.py
-│   │   └── archive_service.py
+│   │   ├── archive_service.py
+│   │   └── image_service.py
 │   └── core/
 │       ├── __init__.py
 │       ├── output.py
@@ -241,6 +262,7 @@ linux-utility-toolkit/
     ├── test_search.py
     ├── test_file.py
     ├── test_archive.py
+    ├── test_image.py
     └── core/
 ```
 
