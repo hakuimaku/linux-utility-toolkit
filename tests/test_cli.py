@@ -90,6 +90,11 @@ def test_invalid_arguments(run_cli, arguments):
         (("search", "content"), True),
         (("file",), True),
         (("file", "rename"), True),
+        (("archive",), True),
+        (("archive", "compress"), True),
+        (("archive", "extract"), True),
+        (("archive", "list"), True),
+        (("archive", "test"), True),
         (("image",), False),
         (("image", "convert"), False),
     ],
@@ -113,9 +118,8 @@ def test_nested_help_entry_points(run_cli, path, is_implemented):
 @pytest.mark.parametrize(
     "arguments",
     [
-        ["archive", "compress", "backup.zip", "--dry-run"],
         ["image", "convert", "ảnh ; $.png", "--dry-run"],
-        ["archive", "extract", "archive.zip", "--dry-run"],
+        ["image", "metadata", "photo.jpg"],
         ["video", "compress", "movie.mp4", "--dry-run"],
         ["video", "info", "movie.mp4"],
         ["audio", "normalize", "sound.flac", "--dry-run"],

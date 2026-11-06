@@ -68,6 +68,11 @@ def test_every_help_level(path, invoke, monkeypatch):
         ("file", "info"),
         ("file", "duplicates"),
         ("file", "rename"),
+        ("archive",),
+        ("archive", "compress"),
+        ("archive", "extract"),
+        ("archive", "list"),
+        ("archive", "test"),
         ("help",),
     }
     if path in implemented_paths:
@@ -110,7 +115,7 @@ def test_planned_examples_match_syntax(path, invoke):
 
 
 def test_planned_commands_have_no_handlers():
-    """Ensure planned utility commands (M4-M9) remain unavailable without handlers."""
+    """Ensure planned utility commands (M5-M9) remain unavailable without handlers."""
     implemented_progs = {
         "lut help",
         "lut search content",
@@ -119,6 +124,10 @@ def test_planned_commands_have_no_handlers():
         "lut file info",
         "lut file duplicates",
         "lut file rename",
+        "lut archive compress",
+        "lut archive extract",
+        "lut archive list",
+        "lut archive test",
     }
     for parser in cli.build_parser().walk():
         if parser.prog in implemented_progs:
@@ -189,7 +198,7 @@ def test_verbose_and_dry_run_scope(arguments, invoke):
 
 @pytest.mark.parametrize(
     "arguments",
-    [["archive", "compress", "--", "help"], ["archive", "compress", "word", "help"]],
+    [["image", "convert", "--", "help"], ["image", "convert", "--dry-run", "--", "help"]],
 )
 def test_literal_help_operands(arguments, invoke):
     """Treat help after -- or another operand as input, not as a help alias."""
@@ -205,6 +214,14 @@ def test_literal_help_operand_implemented_search(invoke):
     # Should execute content search for keyword "help" instead of displaying help
     assert "usage: lut search content" not in output
     assert "Try 'lut search content --help'" not in errors
+
+
+def test_literal_help_operand_implemented_archive(tmp_path, invoke):
+    """Literal 'help' operand is treated as filename for archive compress."""
+    (tmp_path / "help").write_text("content", encoding="utf-8")
+    code, out, err = invoke(["archive", "compress", str(tmp_path / "help"), "--dry-run"])
+    assert code == 0
+    assert "usage: lut archive compress" not in out
 
 
 def test_register_new_module_without_cli_changes(monkeypatch, invoke):

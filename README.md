@@ -1,9 +1,10 @@
 # Linux Utility Toolkit (LUT)
 
-LUT is a Linux command-line toolkit under development. **Milestone 3 — Search & File Tools**
-implements operational search (`search content`, `search name`) and file management
+LUT is a Linux command-line toolkit under development. **Milestone 4 — Archive Manager**
+implements operational archive tools (`archive compress`, `archive extract`, `archive list`, `archive test`),
+alongside Milestone 3 search (`search content`, `search name`) and file management
 (`file hash`, `file info`, `file duplicates`, `file rename`) tools.
-Other utility groups (archive, image, video, audio, wifi, bluetooth, system) remain
+Other utility groups (image, video, audio, wifi, bluetooth, system) remain
 planned and marked **help only; not implemented**.
 The development version remains `0.0.0`; `0.1.0` is reserved for release.
 
@@ -132,6 +133,19 @@ See [Search documentation](docs/search.md) for complete options and backend deta
 
 See [File tools documentation](docs/file.md) for complete details.
 
+## Archive tools (M4)
+
+- `lut archive compress <input> [--format zip|tar|tar.gz|tar.xz|7z] [--level N] [-o output]`:
+  safe compression of files or directories with structure preservation, external symlink blocking, and non-overwriting atomic publication.
+- `lut archive extract <archive> [-o destination]`:
+  safe archive extraction with strict path traversal rejection, no symlink/special-file creation, ZIP bomb resource limits, and atomic directory publication.
+- `lut archive list <archive> [--json]`:
+  inspect archive contents and metadata with terminal control-character escaping without extracting.
+- `lut archive test <archive> [--json]`:
+  internal CRC and stream decompression integrity verification without disk writes.
+
+See [Archive documentation](docs/archive.md) for format matrix, security guarantees, and limitations.
+
 ## Core utilities
 
 The APIs under `lut.core` provide:
@@ -196,6 +210,11 @@ linux-utility-toolkit/
 ├── pyproject.toml
 ├── README.md
 ├── LICENSE
+├── docs/
+│   ├── core.md
+│   ├── file.md
+│   ├── search.md
+│   └── archive.md
 ├── src/lut/
 │   ├── __init__.py
 │   ├── __main__.py
@@ -204,6 +223,10 @@ linux-utility-toolkit/
 │   ├── commands/
 │   │   ├── __init__.py
 │   │   └── <built-in command modules>.py
+│   ├── services/
+│   │   ├── search_service.py
+│   │   ├── file_service.py
+│   │   └── archive_service.py
 │   └── core/
 │       ├── __init__.py
 │       ├── output.py
@@ -215,6 +238,9 @@ linux-utility-toolkit/
 └── tests/
     ├── test_cli.py
     ├── test_help.py
+    ├── test_search.py
+    ├── test_file.py
+    ├── test_archive.py
     └── core/
 ```
 
