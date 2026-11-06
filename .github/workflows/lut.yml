@@ -1,0 +1,37 @@
+name: LUT CLI
+
+on: [push, pull_request, workflow_dispatch]
+
+permissions:
+  contents: read
+
+jobs:
+  cli:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install package and development tools
+        run: python -m pip install '.[dev]'
+      - name: Test installed package
+        run: python -m pytest
+      - name: Lint
+        run: python -m ruff check .
+      - name: Check formatting
+        run: python -m ruff format --check .
+      - name: Smoke test installed entry points outside the source tree
+        working-directory: ${{ runner.temp }}
+        run: |
+          lut --version
+          lut help
+          lut search help
+          lut image convert help
+          python -m lut --version
+          python -m lut image convert --help
