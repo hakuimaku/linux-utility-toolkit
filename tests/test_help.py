@@ -80,6 +80,21 @@ def test_every_help_level(path, invoke, monkeypatch):
         ("image", "crop"),
         ("image", "rotate"),
         ("image", "metadata"),
+        ("video",),
+        ("video", "convert"),
+        ("video", "compress"),
+        ("video", "resize"),
+        ("video", "trim"),
+        ("video", "extract-audio"),
+        ("video", "frames"),
+        ("video", "gif"),
+        ("video", "info"),
+        ("audio",),
+        ("audio", "convert"),
+        ("audio", "trim"),
+        ("audio", "normalize"),
+        ("audio", "volume"),
+        ("audio", "info"),
         ("help",),
     }
     if path in implemented_paths:
@@ -141,6 +156,19 @@ def test_planned_commands_have_no_handlers():
         "lut image crop",
         "lut image rotate",
         "lut image metadata",
+        "lut video convert",
+        "lut video compress",
+        "lut video resize",
+        "lut video trim",
+        "lut video extract-audio",
+        "lut video frames",
+        "lut video gif",
+        "lut video info",
+        "lut audio convert",
+        "lut audio trim",
+        "lut audio normalize",
+        "lut audio volume",
+        "lut audio info",
     }
     for parser in cli.build_parser().walk():
         if parser.prog in implemented_progs:
@@ -194,9 +222,9 @@ def test_syntax_errors(arguments, context, invoke):
 @pytest.mark.parametrize(
     "arguments",
     [
-        ["--verbose", "video", "compress", "private.mp4", "--dry-run"],
-        ["video", "--verbose", "compress", "private.mp4", "--dry-run"],
-        ["video", "compress", "private.mp4", "--verbose", "--dry-run"],
+        ["--verbose", "wifi", "connect", "private", "--dry-run"],
+        ["wifi", "--verbose", "connect", "private", "--dry-run"],
+        ["wifi", "connect", "private", "--verbose", "--dry-run"],
     ],
 )
 def test_verbose_and_dry_run_scope(arguments, invoke):
@@ -204,14 +232,14 @@ def test_verbose_and_dry_run_scope(arguments, invoke):
     # Ensure child defaults do not erase the verbosity set on a parent parser.
     code, output, errors = invoke(arguments)
     assert code == 1 and output == ""
-    assert "selected command: lut video compress; dry-run: True" in errors
-    assert "private.mp4" not in errors
+    assert "selected command: lut wifi connect; dry-run: True" in errors
+    assert "private" not in errors
     assert "not implemented" in errors
 
 
 @pytest.mark.parametrize(
     "arguments",
-    [["video", "compress", "--", "help"], ["video", "compress", "--dry-run", "--", "help"]],
+    [["wifi", "connect", "--", "help"], ["wifi", "connect", "--dry-run", "--", "help"]],
 )
 def test_literal_help_operands(arguments, invoke):
     """Treat help after -- or another operand as input, not as a help alias."""
@@ -244,6 +272,22 @@ def test_literal_help_operand_implemented_image(invoke):
     # instead of displaying help
     assert "usage: lut image metadata" not in out
     assert "Try 'lut image metadata --help'" not in err
+    assert code == 4
+
+
+def test_literal_help_operand_implemented_video(invoke):
+    """Literal 'help' operand is treated as filename for video info, not a help switch."""
+    code, out, err = invoke(["video", "info", "--", "help"])
+    assert "usage: lut video info" not in out
+    assert "Try 'lut video info --help'" not in err
+    assert code == 4
+
+
+def test_literal_help_operand_implemented_audio(invoke):
+    """Literal 'help' operand is treated as filename for audio info, not a help switch."""
+    code, out, err = invoke(["audio", "info", "--", "help"])
+    assert "usage: lut audio info" not in out
+    assert "Try 'lut audio info --help'" not in err
     assert code == 4
 
 

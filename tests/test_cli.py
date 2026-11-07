@@ -97,6 +97,10 @@ def test_invalid_arguments(run_cli, arguments):
         (("archive", "test"), True),
         (("image",), True),
         (("image", "convert"), True),
+        (("video",), True),
+        (("video", "convert"), True),
+        (("audio",), True),
+        (("audio", "convert"), True),
     ],
 )
 def test_nested_help_entry_points(run_cli, path, is_implemented):
@@ -118,9 +122,6 @@ def test_nested_help_entry_points(run_cli, path, is_implemented):
 @pytest.mark.parametrize(
     "arguments",
     [
-        ["video", "compress", "movie.mp4", "--dry-run"],
-        ["video", "info", "movie.mp4"],
-        ["audio", "normalize", "sound.flac", "--dry-run"],
         ["wifi", "connect", "network", "--dry-run"],
         ["bluetooth", "remove", "00:11:22:33:44:55", "--dry-run"],
         ["system", "info"],
