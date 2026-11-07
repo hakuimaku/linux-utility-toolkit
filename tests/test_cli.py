@@ -101,6 +101,8 @@ def test_invalid_arguments(run_cli, arguments):
         (("video", "convert"), True),
         (("audio",), True),
         (("audio", "convert"), True),
+        (("system",), True),
+        (("system", "info"), True),
     ],
 )
 def test_nested_help_entry_points(run_cli, path, is_implemented):
@@ -124,7 +126,7 @@ def test_nested_help_entry_points(run_cli, path, is_implemented):
     [
         ["wifi", "connect", "network", "--dry-run"],
         ["bluetooth", "remove", "00:11:22:33:44:55", "--dry-run"],
-        ["system", "info"],
+        ["wifi", "list"],
     ],
 )
 def test_unimplemented_entry_points(run_cli, arguments):

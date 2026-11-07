@@ -1,13 +1,17 @@
 # Linux Utility Toolkit (LUT)
 
-LUT is a Linux command-line toolkit under development. **Milestone 5 — Image Tools**
-implements operational image tools (`image convert`, `image compress`, `image resize`,
-`image crop`, `image rotate`, `image metadata`), alongside Milestone 4 archive tools
-(`archive compress`, `archive extract`, `archive list`, `archive test`), Milestone 3
-search (`search content`, `search name`), and file management (`file hash`, `file info`,
-`file duplicates`, `file rename`) tools.
-Other utility groups (video, audio, wifi, bluetooth, system) remain
-planned and marked **help only; not implemented**.
+LUT is a Linux command-line toolkit under development.
+
+### Milestone Roadmap
+
+- **Milestone 3 — Search & File Tools**: Completed (`search content`, `search name`, `file hash`, `file info`, `file duplicates`, `file rename`).
+- **Milestone 4 — Archive Tools**: Completed (`archive compress`, `archive extract`, `archive list`, `archive test`).
+- **Milestone 5 — Image Tools**: Completed (`image convert`, `image compress`, `image resize`, `image crop`, `image rotate`, `image metadata`).
+- **Milestone 6 — Video & Audio Tools**: Completed (`video convert`, `video compress`, `video resize`, `video trim`, `video extract-audio`, `video frames`, `video gif`, `video info`, `audio convert`, `audio trim`, `audio normalize`, `audio volume`, `audio info`).
+- **Milestone 7 — Wi-Fi & Bluetooth Manager**: **Cancelled** (removed from release scope).
+- **Milestone 8 — System Tools**: **Completed** (`system info`, `system disk`, `system memory`, `system process`, `system ports`).
+- **Milestone 9 — Release & Cross-distro Testing**: Planned.
+
 The development version remains `0.0.0`; `0.1.0` is reserved for release.
 
 This is a standalone Python project. Installation does not change system
@@ -53,22 +57,15 @@ Each utility leaf includes 1–3 operation examples marked `planned; not impleme
 These examples use only the syntax currently accepted by M1; they do not execute
 the operation or imply support for options from later milestones.
 
-The registered groups are `search`, `file`, `archive`, `image`, `video`, `audio`,
-`wifi`, `bluetooth` and `system`, with the subcommands from the specification.
-Their help describes initial, planned input arguments. It is not a promise that
-the complete future option set is already accepted. In particular, the
-`lut search "keyword"` shortcut and search filtering belong to Milestone 3.
+The registered operational groups are `search`, `file`, `archive`, `image`, `video`,
+`audio`, and `system`.
 
 Options have explicit scope:
 
 - `--version` is a root option: `lut --version`.
-- `--verbose` works before or after command names. For an unavailable operation,
-  it adds command and dry-run diagnostics to stderr without logging operands.
-- `--dry-run` is accepted only on leaf commands that would modify files or
-  connection state, such as `image convert`, `file rename` and `wifi connect`.
-  It is rejected for read-only queries and command groups. **No preview is
-  implemented yet**: a syntactically valid operation still returns `1`, including
-  a dry run, and creates no files or side effects.
+- `--verbose` works before or after command names. It adds command and diagnostics to stderr.
+- `--dry-run` is accepted on modifying operations (such as `image convert`, `video convert`, `file rename`).
+  It is rejected for read-only queries (`search`, `system`). Preview is displayed without applying side effects.
 
 A trailing `help` at a command position requests documentation. To pass a literal
 input named `help`, use `--`, for example `lut search content -- help`. Quoting
@@ -165,6 +162,50 @@ See [Archive documentation](docs/archive.md) for format matrix, security guarant
 
 See [Image documentation](docs/image.md) for supported formats, options, safety rules, and limitations.
 
+## Video & Audio tools (M6)
+
+- `lut video convert <input> [--format FORMAT] [-o OUTPUT]`:
+  convert video container and codec formats using FFmpeg.
+- `lut video compress <input> [-c CRF] [-o OUTPUT]`:
+  two-pass or CRF bitrate reduction for videos.
+- `lut video resize <input> [--width N] [--height N] [-o OUTPUT]`:
+  video dimension scaling preserving aspect ratio.
+- `lut video trim <input> --start TIME --end TIME [-o OUTPUT]`:
+  temporal video trimming with accurate seek.
+- `lut video extract-audio <input> [--format FORMAT] [-o OUTPUT]`:
+  extract audio track without re-encoding when possible.
+- `lut video frames <input> --fps N [-o OUTPUT_DIR]`:
+  extract image sequence from video.
+- `lut video gif <input> [--fps N] [--width N] [-o OUTPUT]`:
+  generate high quality GIF with palettegen/paletteuse.
+- `lut video info <input> [--json]`:
+  inspect video codec, resolution, framerate, duration, and stream metadata.
+- `lut audio convert <input> [--format FORMAT] [-b BITRATE] [-o OUTPUT]`:
+  audio format conversion between MP3, WAV, FLAC, OGG, Opus.
+- `lut audio trim <input> --start TIME --end TIME [-o OUTPUT]`:
+  trim audio by timestamp.
+- `lut audio normalize <input> [--target-lufs N] [-o OUTPUT]`:
+  EBU R128 loudness normalization.
+- `lut audio volume <input> --db N [-o OUTPUT]`:
+  adjust audio volume in decibels.
+- `lut audio info <input> [--json]`:
+  inspect audio channels, sample rate, bitrate, and duration.
+
+## System tools (M8)
+
+- `lut system info [--json]`:
+  inspect OS distribution, kernel version, architecture, hostname, CPU model, thread count, and uptime.
+- `lut system disk [--path PATH] [--all] [--include-virtual] [--json]`:
+  inspect filesystem total size, used space, available space, and mount points.
+- `lut system memory [--json]`:
+  inspect RAM, available memory, estimated used memory, buffers, and swap.
+- `lut system process [--sort cpu|memory|pid|name] [--limit N] [--pid N] [--json]`:
+  list running processes with lifetime CPU utilization, user, state, and RSS physical memory.
+- `lut system ports [--protocol tcp|udp] [--port N] [--all] [--json]`:
+  inspect listening and open network sockets and port bindings using `ss`.
+
+See [System tools documentation](docs/system.md) for detailed syntax, data sources, and JSON schemas.
+
 ## Core utilities
 
 The APIs under `lut.core` provide:
@@ -234,7 +275,8 @@ linux-utility-toolkit/
 │   ├── file.md
 │   ├── search.md
 │   ├── archive.md
-│   └── image.md
+│   ├── image.md
+│   └── system.md
 ├── src/lut/
 │   ├── __init__.py
 │   ├── __main__.py
@@ -247,7 +289,11 @@ linux-utility-toolkit/
 │   │   ├── search_service.py
 │   │   ├── file_service.py
 │   │   ├── archive_service.py
-│   │   └── image_service.py
+│   │   ├── image_service.py
+│   │   ├── video_service.py
+│   │   ├── audio_service.py
+│   │   ├── media_service.py
+│   │   └── system_service.py
 │   └── core/
 │       ├── __init__.py
 │       ├── output.py
@@ -263,6 +309,10 @@ linux-utility-toolkit/
     ├── test_file.py
     ├── test_archive.py
     ├── test_image.py
+    ├── test_video.py
+    ├── test_audio.py
+    ├── test_media.py
+    ├── test_system.py
     └── core/
 ```
 

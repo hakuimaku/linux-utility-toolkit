@@ -1,5 +1,6 @@
 """Validate the complete help tree, module registration and CLI flag scope."""
 
+import re
 import shlex
 import shutil
 import subprocess
@@ -95,12 +96,18 @@ def test_every_help_level(path, invoke, monkeypatch):
         ("audio", "normalize"),
         ("audio", "volume"),
         ("audio", "info"),
+        ("system",),
+        ("system", "info"),
+        ("system", "disk"),
+        ("system", "memory"),
+        ("system", "process"),
+        ("system", "ports"),
         ("help",),
     }
     if path in implemented_paths:
-        assert "help only; not implemented" not in output
+        assert not re.search(r"help only;\s+not\s+implemented", output)
     else:
-        assert "help only; not implemented" in output
+        assert re.search(r"help only;\s+not\s+implemented", output)
 
 
 def test_all_help(invoke):
@@ -169,6 +176,11 @@ def test_planned_commands_have_no_handlers():
         "lut audio normalize",
         "lut audio volume",
         "lut audio info",
+        "lut system info",
+        "lut system disk",
+        "lut system memory",
+        "lut system process",
+        "lut system ports",
     }
     for parser in cli.build_parser().walk():
         if parser.prog in implemented_progs:
