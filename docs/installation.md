@@ -1,22 +1,33 @@
 # Installation Guide
 
-This guide provides simple, step-by-step instructions to install and start using the **Linux Utility Toolkit (`lut`)**.
+This guide provides simple, step-by-step instructions to clone, install, and start using the **Linux Utility Toolkit (`lut`)**.
 
 ---
 
-## 🚀 Quick Start (Choose Your Preferred Method)
+## 1. Clone the Repository
 
-LUT is a pure Python application that requires **Python 3.11 or newer**. It does not require root privileges or complex setup.
+To install from source, first clone the repository to your local machine:
+
+```bash
+git clone https://github.com/hakuimaku/linux-utility-toolkit.git
+cd linux-utility-toolkit
+```
+
+---
+
+## 2. Choose Your Installation Method
+
+LUT is a pure Python application that requires **Python 3.11 or newer**. It does not require root privileges or complex system configuration.
 
 ### Option A: Using `pipx` (Recommended for End Users)
 
-[`pipx`](https://pypa.github.io/pipx/) installs CLI tools in isolated environments while making their executables directly accessible from your terminal anywhere.
+[`pipx`](https://pypa.github.io/pipx/) installs CLI tools into isolated environments and automatically adds the `lut` binary to your user PATH so you can use it anywhere immediately.
 
-1. **Install with a single command:**
+1. **Install from the cloned directory:**
    ```bash
    pipx install .
    ```
-   *(Or install a pre-built wheel: `pipx install linux_utility_toolkit-0.1.0-py3-none-any.whl`)*
+   *(Or install directly from GitHub without cloning: `pipx install git+https://github.com/hakuimaku/linux-utility-toolkit.git`)*
 
 2. **Verify immediately:**
    ```bash
@@ -35,7 +46,7 @@ LUT is a pure Python application that requires **Python 3.11 or newer**. It does
 
 ### Option B: Using a Standard Virtual Environment (`venv`)
 
-If you prefer using Python's built-in `venv` inside the project folder:
+If you prefer using Python's built-in `venv` inside the cloned project folder:
 
 1. **Create and activate a virtual environment:**
    ```bash
@@ -63,7 +74,7 @@ If you prefer using Python's built-in `venv` inside the project folder:
 
 If you plan to modify LUT's source code, run the test suite, or contribute:
 
-1. **Create virtual environment and install in editable mode with development tools:**
+1. **Create virtual environment and install in editable mode with dev tools:**
    ```bash
    python3 -m venv .venv
    source .venv/bin/activate
@@ -72,7 +83,7 @@ If you plan to modify LUT's source code, run the test suite, or contribute:
 
 2. **Run tests and linters:**
    ```bash
-   # Run all unit and integration tests
+   # Run all 680+ unit and integration tests
    pytest
 
    # Run code quality and formatting checks
@@ -82,11 +93,11 @@ If you plan to modify LUT's source code, run the test suite, or contribute:
 
 ---
 
-## ⚡ Optional Backend Tools (Install as Needed)
+## 3. Optional Backend Tools (Install as Needed)
 
 LUT works out of the box with zero external dependencies for most daily tasks:
-- System inspection (`lut system info`, `lut system disk`, `lut system memory`)
-- File hashing and metadata (`lut file hash`, `lut file info`, `lut file rename`)
+- System inspection (`lut system info`, `lut system disk`, `lut system memory`, `lut system process`)
+- File hashing and metadata (`lut file hash`, `lut file info`, `lut file rename`, `lut file duplicates`)
 - Archive creation & extraction (`lut archive` for ZIP, TAR, TAR.GZ, TAR.XZ)
 - Filename search (`lut search name`)
 
@@ -113,7 +124,7 @@ sudo dnf install ripgrep ImageMagick ffmpeg p7zip
 
 ---
 
-## 🔍 Verifying Your Installation
+## 4. Verifying Your Installation
 
 Run these quick commands to confirm everything is working properly:
 
@@ -131,9 +142,9 @@ lut help
 
 ---
 
-## 📦 Building Distribution Packages (Advanced)
+## 5. Building Distribution Packages (Advanced)
 
-To generate standalone distribution archives (`.whl` and `.tar.gz`):
+To generate standalone distribution archives (`.whl` and `.tar.gz`) from the cloned repository:
 
 ```bash
 pip install build
@@ -144,11 +155,14 @@ The resulting packages will be saved in the `dist/` directory:
 - `dist/linux_utility_toolkit-0.1.0-py3-none-any.whl`
 - `dist/linux_utility_toolkit-0.1.0.tar.gz`
 
-You can distribute or install this `.whl` file on any compatible Linux system.
+You can distribute or install this `.whl` file on any compatible Linux system:
+```bash
+pipx install dist/linux_utility_toolkit-0.1.0-py3-none-any.whl
+```
 
 ---
 
-## 🗑️ Uninstallation
+## 6. Uninstallation
 
 Removing LUT is straightforward and leaves no background daemons or configuration files:
 
@@ -159,5 +173,5 @@ Removing LUT is straightforward and leaves no background daemons or configuratio
 - **If installed in a `venv`:**
   ```bash
   pip uninstall linux-utility-toolkit
-  # (Or simply delete the .venv directory)
+  # (Or delete the .venv directory)
   ```

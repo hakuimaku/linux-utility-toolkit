@@ -23,15 +23,24 @@ LUT provides a unified CLI interface for everyday system administration, file op
 
 ## Quick Start & Installation
 
-LUT requires **Python 3.11 or newer**. Choose the method that best fits your workflow:
+LUT requires **Python 3.11 or newer**.
 
-### Option 1: Using `pipx` (Recommended — installs globally for your user)
+### 1. Clone the repository
+```bash
+git clone https://github.com/hakuimaku/linux-utility-toolkit.git
+cd linux-utility-toolkit
+```
+
+### 2. Install LUT
+
+**Option A — Using `pipx` (Recommended — installs globally for your user):**
 ```bash
 pipx install .
 lut --version
 ```
+*(Or install directly from GitHub without cloning: `pipx install git+https://github.com/hakuimaku/linux-utility-toolkit.git`)*
 
-### Option 2: Using standard `venv`
+**Option B — Using standard Python `venv`:**
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
