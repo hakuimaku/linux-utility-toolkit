@@ -1359,11 +1359,8 @@ class TestResourceAndSecurity:
         orig_stat = Path.stat
 
         def mock_stat(self, *args, **kwargs):
-            try:
-                if self.resolve() == f.resolve():
-                    return MockStat()
-            except OSError:
-                pass
+            if self == f:
+                return MockStat()
             return orig_stat(self, *args, **kwargs)
 
         monkeypatch.setattr(Path, "stat", mock_stat)
