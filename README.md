@@ -23,22 +23,23 @@ LUT provides a unified CLI interface for everyday system administration, file op
 
 ## Quick Start & Installation
 
-LUT requires **Python 3.11 or newer**. No root privileges are needed.
+LUT requires **Python 3.11 or newer**. Choose the method that best fits your workflow:
 
+### Option 1: Using `pipx` (Recommended — installs globally for your user)
 ```bash
-# Create and activate a virtual environment
-python3 -m venv .venv
-source .venv/bin/activate
-
-# Install the toolkit
-pip install .
-
-# Verify installation
+pipx install .
 lut --version
-lut help
 ```
 
-For complete instructions (including development setup, wheel building, and distribution packages), see the [Installation Guide](docs/installation.md).
+### Option 2: Using standard `venv`
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install .
+lut --version
+```
+
+For complete instructions (including developer setup, optional media backends, and uninstallation), see the [Installation Guide](docs/installation.md).
 
 ---
 

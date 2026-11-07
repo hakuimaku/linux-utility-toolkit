@@ -1,145 +1,163 @@
 # Installation Guide
 
-This guide covers installing, configuring, building, and verifying the Linux Utility Toolkit (LUT).
+This guide provides simple, step-by-step instructions to install and start using the **Linux Utility Toolkit (`lut`)**.
 
 ---
 
-## 1. System Requirements
+## 🚀 Quick Start (Choose Your Preferred Method)
 
-- **Operating System**: Linux with `/proc` and `/sys` filesystems available.
-  - **Arch Linux**: **Tested and verified**.
-  - **Debian / Ubuntu / Fedora**: Compatible Python 3.11+ environments.
-- **Python**: Version **3.11 or newer** (tested on Python 3.11, 3.12, 3.13, and 3.14).
-- **Tools**: `python3 -m venv` and `pip`.
-- **Privileges**: Standard user privileges. No root or `sudo` is required to install or run LUT.
-- **Dependencies**: LUT core has zero runtime dependencies outside the Python standard library.
+LUT is a pure Python application that requires **Python 3.11 or newer**. It does not require root privileges or complex setup.
 
----
+### Option A: Using `pipx` (Recommended for End Users)
 
-## 2. Standard Installation (Virtual Environment)
+[`pipx`](https://pypa.github.io/pipx/) installs CLI tools in isolated environments while making their executables directly accessible from your terminal anywhere.
 
-The recommended installation method is inside a dedicated Python virtual environment:
+1. **Install with a single command:**
+   ```bash
+   pipx install .
+   ```
+   *(Or install a pre-built wheel: `pipx install linux_utility_toolkit-0.1.0-py3-none-any.whl`)*
 
-### Step 1: Create and activate a virtual environment
-```bash
-python3 -m venv ~/.local/share/lut-venv
-source ~/.local/share/lut-venv/bin/activate
-```
+2. **Verify immediately:**
+   ```bash
+   lut --version
+   lut system info
+   ```
+   You can now run `lut` from any directory without needing to activate a virtual environment.
 
-### Step 2: Install LUT
-From the project directory:
-```bash
-pip install .
-```
-
-### Step 3: Symlink executable to your user PATH (Optional)
-To make the `lut` command accessible globally for your user without activating the venv:
-```bash
-mkdir -p ~/.local/bin
-ln -sf ~/.local/share/lut-venv/bin/lut ~/.local/bin/lut
-```
-*(Ensure `~/.local/bin` is in your `$PATH` in `~/.bashrc` or `~/.zshrc`)*.
+> [!TIP]
+> If you do not have `pipx` installed yet:
+> - **Arch Linux**: `sudo pacman -S python-pipx && pipx ensurepath`
+> - **Debian / Ubuntu**: `sudo apt install pipx && pipx ensurepath`
+> - **Fedora**: `sudo dnf install pipx && pipx ensurepath`
 
 ---
 
-## 3. Development Installation
+### Option B: Using a Standard Virtual Environment (`venv`)
 
-To install LUT in editable mode along with testing (`pytest`) and linting (`ruff`) tools:
+If you prefer using Python's built-in `venv` inside the project folder:
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -e '.[dev]'
-```
+1. **Create and activate a virtual environment:**
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate
+   ```
 
-Run test suite:
-```bash
-pytest
-```
+2. **Install LUT:**
+   ```bash
+   pip install .
+   ```
 
-Run linter and formatter checks:
-```bash
-ruff check .
-ruff format --check .
-```
+3. **Verify installation:**
+   ```bash
+   lut --version
+   lut help
+   ```
 
----
-
-## 4. Building Distribution Packages
-
-LUT uses standard modern packaging (`pyproject.toml` with `setuptools` build backend).
-
-### Build wheel and source distribution
-```bash
-pip install build
-python -m build
-```
-
-This generates release artifacts in `dist/`:
-- `dist/linux_utility_toolkit-0.1.0-py3-none-any.whl` (Wheel)
-- `dist/linux_utility_toolkit-0.1.0.tar.gz` (Source tarball)
-
-### Install from pre-built wheel
-```bash
-pip install dist/linux_utility_toolkit-0.1.0-py3-none-any.whl
-```
+> [!NOTE]
+> When using `venv`, remember to run `source .venv/bin/activate` in new terminal sessions, or invoke the binary directly via `./.venv/bin/lut`.
 
 ---
 
-## 5. Installing Optional External Backends
+### Option C: Developer / Editable Installation
 
-LUT features operate with graceful degradation. Pure Python features (file hash, file info, duplicate detection, atomic file rename, zip/tar archives, name search, and system resource inspection) work immediately without external packages.
+If you plan to modify LUT's source code, run the test suite, or contribute:
 
-To enable advanced media and content search capabilities, install optional backends using your package manager:
+1. **Create virtual environment and install in editable mode with development tools:**
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate
+   pip install -e '.[dev]'
+   ```
 
-### Arch Linux (Tested Platform)
+2. **Run tests and linters:**
+   ```bash
+   # Run all unit and integration tests
+   pytest
+
+   # Run code quality and formatting checks
+   ruff check .
+   ruff format --check .
+   ```
+
+---
+
+## ⚡ Optional Backend Tools (Install as Needed)
+
+LUT works out of the box with zero external dependencies for most daily tasks:
+- System inspection (`lut system info`, `lut system disk`, `lut system memory`)
+- File hashing and metadata (`lut file hash`, `lut file info`, `lut file rename`)
+- Archive creation & extraction (`lut archive` for ZIP, TAR, TAR.GZ, TAR.XZ)
+- Filename search (`lut search name`)
+
+To enable advanced media transcoding, image conversion, or high-speed regex search, install the optional backends using your package manager:
+
+### Arch Linux (Tested & Verified)
 ```bash
-sudo pacman -S ripgrep imagemagick ffmpeg p7zip iproute2
+sudo pacman -S ripgrep imagemagick ffmpeg p7zip
 ```
 
 ### Debian / Ubuntu (Reference)
 ```bash
 sudo apt update
-sudo apt install ripgrep imagemagick ffmpeg p7zip-full iproute2
+sudo apt install ripgrep imagemagick ffmpeg p7zip-full
 ```
 
 ### Fedora (Reference)
 ```bash
-sudo dnf install ripgrep ImageMagick ffmpeg p7zip p7zip-plugins iproute
+sudo dnf install ripgrep ImageMagick ffmpeg p7zip
 ```
+
+> [!NOTE]
+> If you run a command that requires a backend you have not yet installed (e.g. `lut video convert` without `ffmpeg`), LUT will immediately tell you exactly which package to install.
 
 ---
 
-## 6. Verification
+## 🔍 Verifying Your Installation
 
-Verify that the CLI entry points and help system work correctly:
+Run these quick commands to confirm everything is working properly:
 
 ```bash
-# Check installed version
+# 1. Check version
 lut --version
-# Expected output: lut 0.1.0
+# Output: lut 0.1.0
 
-# Verify module launcher
-python3 -m lut --version
-# Expected output: lut 0.1.0
-
-# Verify help tree
-lut help
-
-# Verify system inspection
+# 2. Inspect host system resources (works with zero backends)
 lut system info
+
+# 3. View available command groups
+lut help
 ```
 
 ---
 
-## 7. Uninstallation
+## 📦 Building Distribution Packages (Advanced)
 
-To remove LUT:
+To generate standalone distribution archives (`.whl` and `.tar.gz`):
+
 ```bash
-pip uninstall linux-utility-toolkit
+pip install build
+python -m build
 ```
-If you created a symlink:
-```bash
-rm -f ~/.local/bin/lut
-```
-LUT creates no hidden background services, no persistent daemons, and leaves no configuration files behind.
+
+The resulting packages will be saved in the `dist/` directory:
+- `dist/linux_utility_toolkit-0.1.0-py3-none-any.whl`
+- `dist/linux_utility_toolkit-0.1.0.tar.gz`
+
+You can distribute or install this `.whl` file on any compatible Linux system.
+
+---
+
+## 🗑️ Uninstallation
+
+Removing LUT is straightforward and leaves no background daemons or configuration files:
+
+- **If installed with `pipx`:**
+  ```bash
+  pipx uninstall linux-utility-toolkit
+  ```
+- **If installed in a `venv`:**
+  ```bash
+  pip uninstall linux-utility-toolkit
+  # (Or simply delete the .venv directory)
+  ```
