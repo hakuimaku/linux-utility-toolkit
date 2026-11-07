@@ -40,7 +40,7 @@ class CommandParser(argparse.ArgumentParser):
         """Register a child, marking commands without handlers as help only."""
         if self._command_group is None:
             self._command_group = self.add_subparsers(title="subcommands", metavar="COMMAND")
-        # Label planned commands without advertising them as operational.
+        # Label commands without handlers as help only.
         if status is None:
             status = " [help only; not implemented]" if handler is None else ""
         # Assemble the common documentation around argparse's generated usage.

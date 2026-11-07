@@ -1,6 +1,6 @@
-# File Tools (M3)
+# File Tools
 
-LUT Milestone 3 implements four file management commands: `file hash`, `file info`, `file duplicates`, and `file rename`.
+LUT provides four file management commands: `file hash`, `file info`, `file duplicates`, and `file rename`.
 
 ## 1. File Hash (`lut file hash`)
 

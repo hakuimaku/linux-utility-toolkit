@@ -42,7 +42,7 @@ def output_path(
     output: str | os.PathLike[str] | None = None,
     directory: bool = False,
 ) -> Path:
-    """Validate input and plan an output beside it, without creating anything."""
+    """Validate input and determine an output path beside it, without creating anything."""
     # Reject suffixes and extensions that could escape the selected parent directory.
     if not suffix or "/" in suffix or "\0" in suffix:
         raise UsageError("Output suffix must be a nonempty filename component.")
@@ -106,9 +106,9 @@ def atomic_output(
     dry_run: bool = False,
 ):
     """Yield a private staging path, publishing it only after a successful context body."""
-    # Reuse the same planning contract for real operations and file-free previews.
+    # Reuse the same destination contract for operations and file-free previews.
     original = Path(source).absolute()
-    # Plan from the same absolute input used for later safety and collision checks.
+    # Determine destination from the absolute input used for safety and collision checks.
     destination = output_path(
         original, suffix, extension=extension, output=output, directory=directory
     )

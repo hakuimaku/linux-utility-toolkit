@@ -1,6 +1,6 @@
-# Search Tools (M3)
+# Search Tools
 
-LUT Milestone 3 implements two search commands: `search content` and `search name`.
+LUT provides two search commands: `search content` and `search name`.
 
 ## 1. Content Search (`lut search content`)
 

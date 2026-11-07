@@ -1,6 +1,6 @@
-# Image Tools (M5)
+# Image Tools
 
-LUT Milestone 5 implements six image processing and inspection commands: `image convert`, `image compress`, `image resize`, `image crop`, `image rotate`, and `image metadata`.
+LUT provides six image processing and inspection commands: `image convert`, `image compress`, `image resize`, `image crop`, `image rotate`, and `image metadata`.
 
 ---
 

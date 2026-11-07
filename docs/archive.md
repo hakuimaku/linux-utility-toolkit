@@ -1,6 +1,6 @@
-# Archive Manager (M4)
+# Archive Manager
 
-LUT Milestone 4 implements four archive management commands: `archive compress`, `archive extract`, `archive list`, and `archive test`.
+LUT provides four archive management commands: `archive compress`, `archive extract`, `archive list`, and `archive test`.
 
 ## 1. Supported Formats & Backend Matrix
 

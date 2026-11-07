@@ -1,269 +1,234 @@
 # Linux Utility Toolkit (LUT)
 
-LUT is a Linux command-line toolkit under development.
+**Linux Utility Toolkit (LUT)** is a fast, modular, and dependable command-line utility toolkit designed for Linux systems.
 
-### Milestone Roadmap
+LUT provides a unified CLI interface for everyday system administration, file operations, media transcoding, archive management, content search, and hardware resource inspection.
 
-- **Milestone 3 — Search & File Tools**: Completed (`search content`, `search name`, `file hash`, `file info`, `file duplicates`, `file rename`).
-- **Milestone 4 — Archive Tools**: Completed (`archive compress`, `archive extract`, `archive list`, `archive test`).
-- **Milestone 5 — Image Tools**: Completed (`image convert`, `image compress`, `image resize`, `image crop`, `image rotate`, `image metadata`).
-- **Milestone 6 — Video & Audio Tools**: Completed (`video convert`, `video compress`, `video resize`, `video trim`, `video extract-audio`, `video frames`, `video gif`, `video info`, `audio convert`, `audio trim`, `audio normalize`, `audio volume`, `audio info`).
-- **Milestone 7 — Wi-Fi & Bluetooth Manager**: **Cancelled** (removed from release scope).
-- **Milestone 8 — System Tools**: **Completed** (`system info`, `system disk`, `system memory`, `system process`, `system ports`).
-- **Milestone 9 — Release & Cross-distro Testing**: Planned.
+> [!NOTE]
+> **Release 0.1.0 Status & Platform Support**:
+> - Version: `0.1.0`
+> - **Platform Verification**: Tested and verified on **Arch Linux** (Linux kernel 7.x, Python 3.11–3.14).
+> - Package mappings for Debian/Ubuntu and Fedora are provided for reference, but full compatibility is currently certified only on Arch Linux where tests have been executed.
 
-The development version remains `0.0.0`; `0.1.0` is reserved for release.
+---
 
-This is a standalone Python project. Installation does not change system
-configuration.
+## Key Principles & Guarantees
 
-## Requirements and installation
+- **Zero Runtime Dependencies**: The core package and entry points rely strictly on the Python standard library. No third-party Python packages are required at runtime.
+- **Fail-Safe & Non-Destructive**: Destructive overrides are prevented by default. Modifying commands implement preview (`--dry-run`), preflight collision detection, and atomic staging.
+- **On-Demand Backend Probing**: External CLI tools (`ripgrep`, `ImageMagick`, `FFmpeg`, `7z`, `iproute2`) are discovered on-demand only when a command requiring them is executed. Help and version commands never check or start backends.
+- **Graceful Degradation**: Pure Python commands always function even when external tools are absent. When an optional tool is missing, LUT halts with exit code `3` and prints the exact package manager command for your system.
 
-Python 3.11 or newer with `venv` and `pip` is required. No root access or external
-utility backend is needed. LUT has no runtime dependencies outside the standard
-library. Building the package uses setuptools 77 or newer.
+---
 
-From the repository root:
+## Quick Start & Installation
+
+LUT requires **Python 3.11 or newer**. No root privileges are needed.
 
 ```bash
+# Create and activate a virtual environment
 python3 -m venv .venv
-. .venv/bin/activate
-python -m pip install .
-```
+source .venv/bin/activate
 
-The explicit installation command may download the build tool. LUT itself never
-installs dependencies, runs a package manager or creates a config on startup.
+# Install the toolkit
+pip install .
 
-## CLI and help
-
-```bash
+# Verify installation
 lut --version
 lut help
-lut --help
-lut help --all
-lut search help
-lut search content --help
-lut image convert help
-lut image convert --help
-python -m lut --version
-python -m lut image convert help
 ```
 
-Calling `lut` or a command group such as `lut search` without a subcommand shows
-that group's help. `help` and `--help` work at every registered command level;
-`lut help --all` prints the entire tree. Help includes usage, arguments, options,
-examples, output behavior and dependencies. It never checks or starts a backend.
-Each utility leaf includes 1–3 operation examples marked `planned; not implemented`.
-These examples use only the syntax currently accepted by M1; they do not execute
-the operation or imply support for options from later milestones.
+For complete instructions (including development setup, wheel building, and distribution packages), see the [Installation Guide](docs/installation.md).
 
-The registered operational groups are `search`, `file`, `archive`, `image`, `video`,
-`audio`, and `system`.
+---
 
-Options have explicit scope:
+## Command Modules Overview
 
-- `--version` is a root option: `lut --version`.
-- `--verbose` works before or after command names. It adds command and diagnostics to stderr.
-- `--dry-run` is accepted on modifying operations (such as `image convert`, `video convert`, `file rename`).
-  It is rejected for read-only queries (`search`, `system`). Preview is displayed without applying side effects.
+| Module | Operational Commands | Backend | Documentation |
+|---|---|---|---|
+| **Search** | `search content`, `search name` | `ripgrep` (content), Standard Library (name) | [Search Documentation](docs/search.md) |
+| **File** | `file hash`, `file info`, `file duplicates`, `file rename` | Standard Library (`hashlib`, `renameat2`) | [File Documentation](docs/file.md) |
+| **Archive** | `archive compress`, `archive extract`, `archive list`, `archive test` | Standard Library (ZIP/TAR), `p7zip` (7Z) | [Archive Documentation](docs/archive.md) |
+| **Image** | `image convert`, `image compress`, `image resize`, `image crop`, `image rotate`, `image metadata` | ImageMagick (`magick` or `convert`) | [Image Documentation](docs/image.md) |
+| **Video** | `video convert`, `video compress`, `video resize`, `video trim`, `video extract-audio`, `video frames`, `video gif`, `video info` | FFmpeg & FFprobe | [Video Documentation](docs/video.md) |
+| **Audio** | `audio convert`, `audio trim`, `audio normalize`, `audio volume`, `audio info` | FFmpeg & FFprobe | [Audio Documentation](docs/audio.md) |
+| **System** | `system info`, `system disk`, `system memory`, `system process`, `system ports` | Standard Library (`/proc`, `/sys`), `ss` (optional) | [System Documentation](docs/system.md) |
+| **Wi-Fi / BT**| `wifi *`, `bluetooth *` (CLI help tree) | Help-only interface in v0.1.0 | [Wi-Fi & Bluetooth Documentation](docs/wifi_bluetooth.md) |
 
-A trailing `help` at a command position requests documentation. To pass a literal
-input named `help`, use `--`, for example `lut search content -- help`. Quoting
-alone does not distinguish that word from the help alias.
+---
 
-| Exit code | Meaning |
-| --- | --- |
-| `0` | Help or version displayed successfully |
-| `1` | Syntactically valid operation is not implemented; future execution error |
-| `2` | Invalid command, option or missing required argument |
-| `3` | Missing backend or unsupported backend version |
-| `4` | Missing or malformed input |
-| `5` | Output conflict or filesystem access error |
-| `130` | Interrupted with Ctrl+C |
-| `141` | Stdout pipe closed by the reader (`128 + SIGPIPE`) |
+## Module Summaries
 
-Piping help into `head`, for example `lut help --all | head -n 5`, exits quietly
-when the reader closes early. LUT handles both writes and buffered stdout flushes
-without a Python traceback or a shutdown error, following
-[Python's stdout cleanup guidance](https://docs.python.org/3/library/signal.html#note-on-sigpipe).
-With shell `pipefail` enabled,
-an interrupted producer reports `141`; otherwise the pipeline uses the final
-command's status.
-
-Syntax errors print usage, valid command choices where applicable and a contextual
-`--help` hint on stderr. No utility command currently reports an execution success.
-Once search is implemented, code `1` can also mean no matches, following grep's
-convention; this is not a working search feature in M1.
-
-## Registering a module
-
-Each built-in module in `src/lut/commands/` exposes `register(parser)` and declares
-its command tree with `parser.add_command(...)`. Add the module to `MODULES` in
-[`src/lut/commands/__init__.py`](src/lut/commands/__init__.py). **No edit to `cli.py`
-is needed** to add a module or its help pages. Registration only describes syntax
-and help; it must not check dependencies, read user files or perform operations.
-
-`add_command` requires a name, description and examples. It accepts dependency
-documentation, a scoped dry-run flag and an optional `handler(namespace) -> int`.
-Commands without handlers are labeled help only; valid leaf invocations return
-`1`. The handler contract supports future implementations without a dispatch
-switch in `cli.py`. Commands with handlers execute directly, while planned
-commands reject execution with exit code 1.
-
-## Search tools (M3)
-
+### 1. Search Tools
 - `lut search content <keyword> [path] [options]` (alias: `lut search <keyword>`):
-  fast text search powered by `ripgrep` with streaming output, ignore-file support, and JSON.
+  High-performance regex or literal text search powered by `ripgrep` with streaming output, ignore-file support, and JSON output.
 - `lut search name <pattern> [path] [options]`:
-  recursive glob search across files and directories (including empty dirs) using Python traversal.
+  Recursive glob search across files and directories (including empty dirs) using Python filesystem traversal without external dependencies.
 
-See [Search documentation](docs/search.md) for complete options and backend details.
+See [Search Documentation](docs/search.md).
 
-## File tools (M3)
-
+### 2. File Tools
 - `lut file hash <file> [-a algo]`:
-  chunked cryptographic checksums (SHA-256, SHA-512, SHA-1, MD5).
+  Chunked cryptographic checksums (SHA-256, SHA-512, SHA-1, MD5) with bounded memory usage.
 - `lut file info <path>`:
-  metadata, size, timestamps, permissions and symlink inspection.
+  Metadata, permissions, file size, timestamps, and symlink target inspection.
 - `lut file duplicates [path]`:
-  find duplicate files with hardlink-aware wasted space calculation.
+  Identifies duplicate files with inode-aware wasted space calculation.
 - `lut file rename <inputs> [--prefix] [--suffix] [--replace] [--apply]`:
-  preview-by-default safe batch renaming with preflight collision checks and atomic non-overwriting rename.
+  Preview-by-default safe batch renaming with preflight collision checks and atomic non-overwriting execution (`renameat2`).
 
-See [File tools documentation](docs/file.md) for complete details.
+See [File Documentation](docs/file.md).
 
-## Archive tools (M4)
-
-- `lut archive compress <input> [--format zip|tar|tar.gz|tar.xz|7z] [--level N] [-o output]`:
-  safe compression of files or directories with structure preservation, external symlink blocking, and non-overwriting atomic publication.
+### 3. Archive Tools
+- `lut archive compress <input> [--format zip|tar|tar.gz|tar.xz|7z] [-o output]`:
+  Safe compression with directory structure preservation, external symlink blocking, and atomic publication.
 - `lut archive extract <archive> [-o destination]`:
-  safe archive extraction with strict path traversal rejection, no symlink/special-file creation, ZIP bomb resource limits, and atomic directory publication.
+  Safe extraction with path traversal protection (anti-Zip Slip), symlink blocking, ZIP bomb thresholds, and atomic directory publication.
 - `lut archive list <archive> [--json]`:
-  inspect archive contents and metadata with terminal control-character escaping without extracting.
+  Lists archive entries and metadata with control-character sanitization without unpacking.
 - `lut archive test <archive> [--json]`:
-  internal CRC and stream decompression integrity verification without disk writes.
+  Internal CRC and stream decompression verification without disk writes.
 
-See [Archive documentation](docs/archive.md) for format matrix, security guarantees, and limitations.
+See [Archive Documentation](docs/archive.md).
 
-## Image tools (M5)
-
-- `lut image convert <input> [--format FORMAT] [-o OUTPUT] [--quality N] [--background COLOR] [--frame N]`:
-  safe image format conversion between JPEG, PNG, WebP, BMP, TIFF, and GIF with explicit transparency handling and animation loss protection.
+### 4. Image Tools
+- `lut image convert <input> [--format FORMAT] [-o OUTPUT]`:
+  Safe image format conversion across JPEG, PNG, WebP, BMP, TIFF, and GIF with explicit transparency handling.
 - `lut image compress <input> [-q QUALITY] [-o OUTPUT]`:
-  reduce image file size with lossy quality controls for JPEG/WebP, lossless compression for PNG, and accurate before/after size reporting.
-- `lut image resize <input> [--width N] [--height N] [--fit contain|cover|stretch] [--allow-upscale] [-o OUTPUT]`:
-  dimension resizing preserving aspect ratio by default, with bounding box contain/cover/stretch modes and upscale prevention.
-- `lut image crop <input> --x N --y N --width N --height N [-o OUTPUT]`:
-  pixel region cropping with strict boundary validation, virtual canvas reset (+repage), and transparency preservation.
-- `lut image rotate <input> --angle N [--background COLOR] [-o OUTPUT]`:
-  clockwise rotation in degrees, expanding canvas without corner cropping, auto-orienting EXIF and normalizing orientation metadata.
+  Reduces file size with lossy quality controls for JPEG/WebP and lossless optimization for PNG.
+- `lut image resize <input> [--width N] [--height N] [--allow-upscale]`:
+  Dimension scaling preserving aspect ratio by default.
+- `lut image crop <input> --x N --y N --width N --height N`:
+  Pixel region cropping with boundary validation and virtual canvas reset.
+- `lut image rotate <input> --angle N`:
+  Clockwise rotation expanding canvas without corner cropping.
 - `lut image metadata <input> [--json]`:
-  read-only inspection of format, dimensions, colorspace, alpha channels, profiles, bit depth, and orientation without GPS data leakage.
+  Read-only inspection of format, dimensions, colorspace, alpha channels, and orientation.
 
-See [Image documentation](docs/image.md) for supported formats, options, safety rules, and limitations.
+See [Image Documentation](docs/image.md).
 
-## Video & Audio tools (M6)
-
+### 5. Video & Audio Tools
 - `lut video convert <input> [--format FORMAT] [-o OUTPUT]`:
-  convert video container and codec formats using FFmpeg.
-- `lut video compress <input> [-c CRF] [-o OUTPUT]`:
-  two-pass or CRF bitrate reduction for videos.
-- `lut video resize <input> [--width N] [--height N] [-o OUTPUT]`:
-  video dimension scaling preserving aspect ratio.
-- `lut video trim <input> --start TIME --end TIME [-o OUTPUT]`:
-  temporal video trimming with accurate seek.
-- `lut video extract-audio <input> [--format FORMAT] [-o OUTPUT]`:
-  extract audio track without re-encoding when possible.
-- `lut video frames <input> --fps N [-o OUTPUT_DIR]`:
-  extract image sequence from video.
-- `lut video gif <input> [--fps N] [--width N] [-o OUTPUT]`:
-  generate high quality GIF with palettegen/paletteuse.
+  Container and codec conversion using FFmpeg.
+- `lut video compress <input> [-q low|medium|high] [--crf N] [--preset PRESET]`:
+  Bitrate and CRF compression for videos.
+- `lut video resize <input> [--width N] [--height N]`:
+  Frame dimension scaling with even-dimension enforcement.
+- `lut video trim <input> --start TIME --end TIME [--copy]`:
+  Temporal cutting with accurate seek or fast packet copying.
+- `lut video extract-audio <input> [--format FORMAT] [--stream N]`:
+  Extracts audio streams from video files.
+- `lut video frames <input> [--fps N] [--format png|jpg]`:
+  Extracts video frames as image sequences into a directory.
+- `lut video gif <input> [--start S] [--duration S] [--fps N] [--width N]`:
+  Generates animated GIFs using high-quality two-pass palette filters.
 - `lut video info <input> [--json]`:
-  inspect video codec, resolution, framerate, duration, and stream metadata.
-- `lut audio convert <input> [--format FORMAT] [-b BITRATE] [-o OUTPUT]`:
-  audio format conversion between MP3, WAV, FLAC, OGG, Opus.
-- `lut audio trim <input> --start TIME --end TIME [-o OUTPUT]`:
-  trim audio by timestamp.
-- `lut audio normalize <input> [--target-lufs N] [-o OUTPUT]`:
-  EBU R128 loudness normalization.
-- `lut audio volume <input> --db N [-o OUTPUT]`:
-  adjust audio volume in decibels.
+  Inspects codecs, resolution, framerate, duration, and stream details.
+- `lut audio convert <input> [--format FORMAT] [-b BITRATE]`:
+  Transcodes audio between MP3, WAV, FLAC, OGG, and Opus.
+- `lut audio trim <input> --start TIME --end TIME`:
+  Trims audio by timestamp.
+- `lut audio normalize <input> [--target-lufs N]`:
+  Broadcast loudness normalization using EBU R128 (`loudnorm`).
+- `lut audio volume <input> --db N`:
+  Adjusts audio gain in decibels.
 - `lut audio info <input> [--json]`:
-  inspect audio channels, sample rate, bitrate, and duration.
+  Inspects sample rates, bit rates, channels, and duration.
 
-## System tools (M8)
+See [Video Documentation](docs/video.md) and [Audio Documentation](docs/audio.md).
 
+### 6. System Tools
 - `lut system info [--json]`:
-  inspect OS distribution, kernel version, architecture, hostname, CPU model, thread count, and uptime.
-- `lut system disk [--path PATH] [--all] [--include-virtual] [--json]`:
-  inspect filesystem total size, used space, available space, and mount points.
+  Inspects OS distribution, kernel version, architecture, hostname, CPU model, thread count, container CPU quotas, and uptime.
+- `lut system disk [--path PATH] [--local-only] [--json]`:
+  Inspects filesystems, total/used/free space, and mount points with non-blocking daemon protection against hung NFS mounts.
 - `lut system memory [--json]`:
-  inspect RAM, available memory, estimated used memory, buffers, and swap.
+  Inspects RAM, available memory, swap, and container cgroup v1/v2 memory limits.
 - `lut system process [--sort cpu|memory|pid|name] [--limit N] [--pid N] [--json]`:
-  list running processes with lifetime CPU utilization, user, state, and RSS physical memory.
-- `lut system ports [--protocol tcp|udp] [--port N] [--all] [--json]`:
-  inspect listening and open network sockets and port bindings using `ss`.
+  Lists running processes with CPU usage, memory RSS, user, state, and script name resolution.
+- `lut system ports [--protocol tcp|udp] [--port N] [--json]`:
+  Inspects open and listening network ports via `ss` with automatic fallback to `/proc/net`.
 
-See [System tools documentation](docs/system.md) for detailed syntax, data sources, and JSON schemas.
+See [System Documentation](docs/system.md).
 
-## Core utilities
+### 7. Wi-Fi & Bluetooth (CLI Help Scope)
+In release 0.1.0, the `wifi` and `bluetooth` command groups provide CLI syntax documentation (`handler=None`). Operational invocations exit safely with code `1` without accessing network services or adapters.
 
-The APIs under `lut.core` provide:
+See [Wi-Fi & Bluetooth Documentation](docs/wifi_bluetooth.md).
 
-- `output.atomic_output`: automatic names, numbered collisions, explicit output
-  overrides, private staging and atomic publication without replacing an existing
-  file or directory. Failed operations clean staging; dry runs only plan a path.
-- `dependencies.require_executable` and `require_service`: on-demand PATH/version
-  checks, distro-aware installation hints and caller-supplied service probes.
-  No dependency is installed and no service is started.
-- `process.run_process`: literal argument lists, completed exit status, bounded
-  stdout/stderr capture, streaming progress callbacks, deadlines and process-group
-  cleanup on timeout or cancellation. No arguments or backend output are logged.
-- `config`: XDG config/cache/state paths and optional TOML loading without
-  first-run writes. Relative XDG overrides are ignored.
-- `errors` and `logging`: stable error codes, safe CLI diagnostics and scoped
-  stderr logging. Private file logging requires an explicit destination.
+---
 
-See [Core API contracts and examples](docs/core.md) for usage and limitations,
-including filesystem requirements and the scope of process-group cleanup.
+## Dependency Matrix
 
-No new CLI commands or options are introduced by M2. Core dry runs are available
-to Python callers; the utility commands still reject execution, including their
-planned dry-run invocations. Real image, video, archive and search operations
-remain unimplemented.
+LUT core relies strictly on Python 3.11+. External CLI tools are optional and discovered on-demand:
 
-## Development and validation
+| External Tool | Used By | Arch Linux (Tested) | Debian / Ubuntu (Reference) | Fedora (Reference) | Fallback Behavior |
+|---|---|---|---|---|---|
+| **Python >= 3.11** | Core Runtime | `pacman -S python` | `apt install python3` | `dnf install python3` | Required |
+| **ripgrep** (`rg`) | `search content` | `pacman -S ripgrep` | `apt install ripgrep` | `dnf install ripgrep` | Exit code `3` if missing |
+| **ImageMagick** | `image *` | `pacman -S imagemagick` | `apt install imagemagick` | `dnf install ImageMagick` | Exit code `3` if missing |
+| **FFmpeg & FFprobe** | `video *`, `audio *` | `pacman -S ffmpeg` | `apt install ffmpeg` | `dnf install ffmpeg` | Exit code `3` if missing |
+| **7-Zip** (`7z`) | `archive` (7Z format) | `pacman -S p7zip` | `apt install p7zip-full` | `dnf install p7zip p7zip-plugins` | Exit code `3` if missing |
+| **iproute2** (`ss`) | `system ports` | `pacman -S iproute2` | `apt install iproute2` | `dnf install iproute` | Falls back to `/proc/net` |
 
-Install the optional test and lint tools inside the activated virtual environment:
+See [Dependency Matrix](docs/dependencies.md) for complete details.
 
+---
+
+## Global CLI Options & Exit Codes
+
+### Global Options
+- `--version`: Displays the installed LUT version.
+- `--help`, `-h`: Shows contextual help for any command or group.
+- `help`, `help --all`: Subcommand help; `lut help --all` outputs the entire command tree.
+- `--verbose`: Emits diagnostic details to `stderr`.
+- `--dry-run`: Previews modifying actions without making filesystem changes.
+- `--json`: Formats output as structured JSON.
+
+### Standard Exit Codes
+
+| Exit Code | Meaning |
+|---|---|
+| `0` | Success or help/version displayed |
+| `1` | Execution error; no search matches; or command without execution handler |
+| `2` | Syntax error, unrecognized argument, or missing required parameter |
+| `3` | Missing external dependency backend |
+| `4` | Input error (missing file, invalid format, zip bomb threshold exceeded) |
+| `5` | Output conflict (destination exists on explicit `-o`) or access error |
+| `130` | Interrupted by user (Ctrl+C / `SIGINT`) |
+| `141` | Stdout pipe closed by reader (`SIGPIPE`) |
+
+For comprehensive error scenarios and remedies, see the [Troubleshooting Guide](docs/troubleshooting.md).
+
+---
+
+## Testing & Verification
+
+Install development dependencies:
 ```bash
-python -m pip install -e '.[dev]'
-python -m pytest
-python -m ruff check .
-python -m ruff format --check .
+pip install -e '.[dev]'
 ```
 
-Unit tests derive help cases from the real registry, checking every level and
-both help spellings. They cover recursive help, flag inheritance and scope,
-syntax errors, literal `help` inputs, Ctrl+C, no backend checks and registration
-of an additional fixture module without modifying `cli.py`.
+Run unit and integration test suite:
+```bash
+pytest
+```
 
-Entry point tests run outside the source tree with no executable backends on
-`PATH`. They exercise both launchers, including nested help, version, invalid
-arguments and refusal of planned operations. They also check that invocations
-create no files in the working directory.
+Run code quality and format checks:
+```bash
+ruff check .
+ruff format --check .
+```
 
-Core tests cover real concurrent file/directory publication, collisions and
-symlinks, rollback, permissions, dry-run side effects, XDG overrides, dependency
-and service errors, process capture limits, Unicode progress, timeouts, real
-SIGINT, descendant termination, descriptor cleanup and credential-free logs.
+Verify backend isolation by executing tests with `PATH=""`:
+```bash
+PATH="" lut system info
+PATH="" lut file hash pyproject.toml
+```
 
-CI is defined in [`.github/workflows/lut.yml`](.github/workflows/lut.yml).
-It installs the package normally and runs LUT-only tests, lint and entry point
-smoke checks on Ubuntu with Python 3.11–3.14. This matrix is not a claim of
-verified compatibility across Linux distributions.
+---
 
-## Structure
+## Repository Structure
 
 ```text
 linux-utility-toolkit/
@@ -271,12 +236,18 @@ linux-utility-toolkit/
 ├── README.md
 ├── LICENSE
 ├── docs/
-│   ├── core.md
-│   ├── file.md
-│   ├── search.md
 │   ├── archive.md
+│   ├── audio.md
+│   ├── core.md
+│   ├── dependencies.md
+│   ├── file.md
 │   ├── image.md
-│   └── system.md
+│   ├── installation.md
+│   ├── search.md
+│   ├── system.md
+│   ├── troubleshooting.md
+│   ├── video.md
+│   └── wifi_bluetooth.md
 ├── src/lut/
 │   ├── __init__.py
 │   ├── __main__.py
@@ -284,24 +255,31 @@ linux-utility-toolkit/
 │   ├── parser.py
 │   ├── commands/
 │   │   ├── __init__.py
-│   │   └── <built-in command modules>.py
+│   │   ├── archive.py
+│   │   ├── audio.py
+│   │   ├── bluetooth.py
+│   │   ├── file.py
+│   │   ├── image.py
+│   │   ├── search.py
+│   │   ├── system.py
+│   │   ├── video.py
+│   │   └── wifi.py
 │   ├── services/
-│   │   ├── search_service.py
-│   │   ├── file_service.py
 │   │   ├── archive_service.py
-│   │   ├── image_service.py
-│   │   ├── video_service.py
 │   │   ├── audio_service.py
+│   │   ├── file_service.py
+│   │   ├── image_service.py
 │   │   ├── media_service.py
-│   │   └── system_service.py
+│   │   ├── search_service.py
+│   │   ├── system_service.py
+│   │   └── video_service.py
 │   └── core/
-│       ├── __init__.py
-│       ├── output.py
-│       ├── dependencies.py
-│       ├── process.py
 │       ├── config.py
+│       ├── dependencies.py
 │       ├── errors.py
-│       └── logging.py
+│       ├── logging.py
+│       ├── output.py
+│       └── process.py
 └── tests/
     ├── test_cli.py
     ├── test_help.py
@@ -316,9 +294,8 @@ linux-utility-toolkit/
     └── core/
 ```
 
-M2 adds no runtime or development dependencies. The package stays on the standard
-library at runtime. All utility implementations belong to later milestones.
+---
 
 ## License
 
-MIT; see [LICENSE](LICENSE).
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.

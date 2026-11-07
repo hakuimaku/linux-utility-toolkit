@@ -1,4 +1,4 @@
-# System Tools (M8)
+# System Tools
 
 The `lut system` command group provides read-only inspection of host Linux system
 resources through a unified CLI and JSON contract.

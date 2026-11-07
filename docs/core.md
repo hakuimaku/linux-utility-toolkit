@@ -1,9 +1,8 @@
-# Core utilities (M2)
+# Core utilities
 
-These are Python APIs for future command handlers. M2 does not make any utility
-command operational or add backend-specific CLI options. All APIs use the Python
-standard library. Help and version output never read config, check backends or
-create cache/state/log files.
+These are core Python APIs used across LUT command handlers. All APIs use the
+Python standard library without external dependencies. Help and version output
+never read config, check backends, or create cache/state/log files.
 
 ## Output transactions
 
@@ -19,10 +18,10 @@ print(output.destination)
 ```
 
 This library example produces `notes_copy.txt` beside its input, or
-`notes_copy_2.txt`, `_3`, etc. The CLI `file` commands remain unimplemented.
+`notes_copy_2.txt`, `_3`, etc.
 
 `output_path(source, suffix, *, extension=None, output=None, directory=False)`
-validates the input and returns an absolute planned destination without creating
+validates the input and returns an absolute destination without creating
 anything. The last input extension is retained unless replaced by `extension`;
 input directory names retain their dots. Compound output extensions such as
 `.tar.gz` stay intact when collision numbers are added.
@@ -43,7 +42,7 @@ of choosing another path. Treat the yielded object's fields as read-only.
 Backend output that becomes a symlink or hard link to the original is rejected.
 
 With `dry_run=True`, `temporary` is `None`: no file, directory or backend is
-created. This is path planning, not a preview of an unimplemented utility.
+created. This determines destination paths without creating filesystem artifacts.
 Source files and directories are never deleted by these APIs.
 
 File publication uses a same-filesystem hard link. Directory publication uses
@@ -97,7 +96,7 @@ The result contains `returncode`, `stdout`, `stderr` and `executed`. Output is
 decoded as UTF-8 with replacement of invalid bytes. `progress(stream, text)`
 receives incrementally decoded chunks from `stdout` or `stderr`; chunks need not
 be lines and the callback must not block. No percentage is guessed. Backend
-progress parsing belongs to the corresponding later milestone.
+progress parsing is handled by the calling service.
 
 The runner is noninteractive (`stdin=DEVNULL`). A nonzero status raises
 `ProcessError`, retaining the backend's `returncode` separately from LUT's exit
